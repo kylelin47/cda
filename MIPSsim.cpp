@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <stdlib.h>
+#include <vector>
 using namespace std;
 long parseInt(string line)
 {
@@ -149,8 +150,7 @@ int main(int argc, char *argv[])
     disassembly.open ("disassembly.txt", ios::binary);
     string line;
     int address = 128;
-    long data[16];
-    int d_address = 0;
+    vector<long> data;
     int data_start = -1;
     bool b = false;
     while ( getline (inputfile,line) )
@@ -171,8 +171,7 @@ int main(int argc, char *argv[])
             }
             long x = parseInt(line);
             disassembly << x;
-            data[d_address] = x;
-            ++d_address;
+            data.push_back(x);
         }
         disassembly << '\n';
         address += 4;
@@ -200,16 +199,61 @@ int main(int argc, char *argv[])
             registers[strtol(line.substr(2, 5).c_str(), 0, 2)] +
             registers[strtol(line.substr(7, 5).c_str(), 0, 2)];
         }
-        else if (instruction == "J" && cycle < 30)
+        else if (instruction == "MUL")
+        {
+            registers[strtol(line.substr(16, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] *
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)];
+        }
+        else if (instruction == "J" && cycle < 100)
         {
             long seek_position = strtol(line.substr(6, 26).c_str(), 0, 2) * 4;
             address = seek_position - 4;
-            seek_position = (seek_position - 128)/4; //+(((seek_position - 128)*8)/32)*2;
+            seek_position = (seek_position - 128)/4;
             inputfile.seekg(0, ios::beg);
             for (int i=0; i < seek_position; ++i)
             {
                 getline(inputfile, line);
             }
+        }
+        else if (instruction == "BEQ")
+        {
+            if (registers[strtol(line.substr(6, 5).c_str(), 0, 2)] ==
+                registers[strtol(line.substr(11, 5).c_str(), 0, 2)])
+            {
+                address += parseInt(line.substr(16, 16)) * 4;
+                inputfile.seekg(0, ios::beg);
+                int seek_position = (address - 124)/4;
+                for (int i=0; i < seek_position; ++i)
+                {
+                    getline(inputfile, line);
+                }
+            }
+        }
+        else if (instruction == "BGTZ")
+        {
+            if (registers[strtol(line.substr(6, 5).c_str(), 0, 2)] > 0)
+            {
+                address += parseInt(line.substr(16, 16)) * 4;
+                inputfile.seekg(0, ios::beg);
+                int seek_position = (address - 124)/4;
+                for (int i=0; i < seek_position; ++i)
+                {
+                    getline(inputfile, line);
+                }
+            }
+        }
+        else if (instruction == "LW")
+        {
+            int address = registers[strtol(line.substr(6, 5).c_str(), 0, 2)] +
+                          parseInt(line.substr(16, 16));
+            registers[strtol(line.substr(11, 5).c_str(), 0, 2)] = data[(address-data_start)/4];
+        }
+        else if (instruction == "SW")
+        {
+            int address = registers[strtol(line.substr(6, 5).c_str(), 0, 2)] +
+                          parseInt(line.substr(16, 16));
+            data[(address-data_start)/4] = registers[strtol(line.substr(11, 5).c_str(), 0, 2)];
         }
         simulation << '\n' << '\n';
         simulation << "Registers" << '\n';
@@ -244,21 +288,18 @@ int main(int argc, char *argv[])
             if (i != 31)
                 simulation << '\t';
         }
-        simulation << '\n';
-        simulation << "Data" << '\n';
-        simulation << data_start << ":" <<'\t';
-        for (int i=0; i<8; ++i)
+        simulation << '\n' << "Data";
+        int tag = data_start;
+        for (int i=0; i<data.size(); ++i)
         {
+            if (i % 8 == 0)
+            {
+                simulation << '\n';
+                simulation << tag << ":" <<'\t';
+                tag += 32;
+            }
             simulation << data[i];
-            if (i != 7)
-                simulation << '\t';
-        }
-        simulation << '\n';
-        simulation << data_start + 32 << ":" <<'\t';
-        for (int i=8; i<16; ++i)
-        {
-            simulation << data[i];
-            if (i != 15)
+            if ( (i %8) != 7)
                 simulation << '\t';
         }
         if (instruction == "BREAK")

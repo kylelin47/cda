@@ -52,8 +52,8 @@ string parseInstruction(string line, ofstream& disassembly)
         }
         else if (op == "0100")
         {
-            disassembly << "ADD ";
-            returnValue = "ADD";
+            disassembly << "OR ";
+            returnValue = "OR";
         }
         else if (op == "0101")
         {
@@ -257,6 +257,42 @@ int main(int argc, char *argv[])
                           parseInt(line.substr(16, 16));
             data[(address-data_start)/4] = registers[strtol(line.substr(11, 5).c_str(), 0, 2)];
         }
+        else if (instruction == "AND")
+        {
+            registers[strtol(line.substr(16, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] &
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)];
+        }
+        else if (instruction == "OR")
+        {
+            registers[strtol(line.substr(16, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] |
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)];
+        }
+        else if (instruction == "XOR")
+        {
+            registers[strtol(line.substr(16, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] ^
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)];
+        }
+        else if (instruction == "NOR")
+        {
+            registers[strtol(line.substr(16, 5).c_str(), 0, 2)] =
+            ~(registers[strtol(line.substr(2, 5).c_str(), 0, 2)] |
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)]);
+        }
+        else if (instruction == "XORI")
+        {
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] ^
+            parseInt(line.substr(16, 16));
+        }
+        else if (instruction == "ORI")
+        {
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] |
+            parseInt(line.substr(16, 16));
+        }
         simulation << '\n' << '\n';
         simulation << "Registers" << '\n';
         simulation << "R00: " << '\t';
@@ -312,6 +348,7 @@ int main(int argc, char *argv[])
         ++cycle;
         address += 4;
     }
+    simulation << '\n';
     simulation.close();
     return 0;
 }

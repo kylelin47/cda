@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     ifstream inputfile (argv[1]);
     ofstream disassembly;
     ofstream simulation;
-    disassembly.open ("disassembly.txt", ios::binary);
+    disassembly.open ("generated_disassembly.txt", ios::binary);
     string line;
     int address = 128;
     vector<long> data;
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         address += 4;
     }
     disassembly.close();
-    simulation.open ("simulation.txt", ios::binary);
+    simulation.open ("generated_simulation.txt", ios::binary);
     inputfile.clear();
     inputfile.seekg(0, ios::beg);
     int cycle = 1;

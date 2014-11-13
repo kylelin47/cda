@@ -8,6 +8,7 @@ assignment */
 using namespace std;
 long parseInt(string line)
 {
+    line = line.substr(0, 32);
     long x;
     if (line[0] == '1')
     {
@@ -26,6 +27,7 @@ long parseInt(string line)
 }
 string parseInstruction(string line, ofstream& disassembly)
 {
+    line = line.substr(0, 32);
     string returnValue;
     if (line.substr(0,2) == "01")
     {
@@ -140,7 +142,14 @@ string parseInstruction(string line, ofstream& disassembly)
         }
         disassembly << "R" << strtol(line.substr(7, 5).c_str(), 0, 2) << ", ";
         disassembly << "R" << strtol(line.substr(2, 5).c_str(), 0, 2) << ", ";
-        disassembly << "#" << parseInt(line.substr(16, 16));
+        if (returnValue == "ADDI")
+        {
+            disassembly << "#" << parseInt(line.substr(16, 16));
+        }
+        else
+        {
+            disassembly << "#" << strtol(line.substr(16, 16).c_str(), 0, 2);
+        }
     }
     return returnValue;
 }
@@ -285,13 +294,19 @@ int main(int argc, char *argv[])
         {
             registers[strtol(line.substr(7, 5).c_str(), 0, 2)] =
             registers[strtol(line.substr(2, 5).c_str(), 0, 2)] ^
-            parseInt(line.substr(16, 16));
+            strtol(line.substr(16, 16).c_str(), 0, 2);
         }
         else if (instruction == "ORI")
         {
             registers[strtol(line.substr(7, 5).c_str(), 0, 2)] =
             registers[strtol(line.substr(2, 5).c_str(), 0, 2)] |
-            parseInt(line.substr(16, 16));
+            strtol(line.substr(16, 16).c_str(), 0, 2);
+        }
+        else if (instruction == "ANDI")
+        {
+            registers[strtol(line.substr(7, 5).c_str(), 0, 2)] =
+            registers[strtol(line.substr(2, 5).c_str(), 0, 2)] &
+            strtol(line.substr(16, 16).c_str(), 0, 2);
         }
         simulation << '\n' << '\n';
         simulation << "Registers" << '\n';

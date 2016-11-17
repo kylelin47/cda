@@ -34,39 +34,33 @@ string parseInstruction(string line, ofstream& disassembly)
         string op = line.substr(12, 4);
         if (op == "0000")
         {
-            disassembly << "ADD ";
             returnValue = "ADD";
         }
         else if (op == "0001")
         {
-            disassembly << "SUB ";
             returnValue = "SUB";
         }
         else if (op == "0010")
         {
-            disassembly << "MUL ";
             returnValue = "MUL";
         }
         else if (op == "0011")
         {
-            disassembly << "AND ";
             returnValue = "AND";
         }
         else if (op == "0100")
         {
-            disassembly << "OR ";
             returnValue = "OR";
         }
         else if (op == "0101")
         {
-            disassembly << "XOR ";
             returnValue = "XOR";
         }
         else if (op == "0110")
         {
-            disassembly << "NOR ";
             returnValue = "NOR";
         }
+        disassembly << returnValue + " ";
         disassembly << "R" << strtol(line.substr(16, 5).c_str(), 0, 2) << ", ";
         disassembly << "R" << strtol(line.substr(2, 5).c_str(), 0, 2) << ", ";
         disassembly << "R" << strtol(line.substr(7, 5).c_str(), 0, 2);
